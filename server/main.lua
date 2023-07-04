@@ -1,8 +1,8 @@
-ESX = exports["es_extended"]:getSharedObject()
+local QBCore = exports["qb-core"]:GetCoreObject()
 
-lib.callback.register('jocy-technician:reward', function ()
-    local ped = ESX.GetPlayerFromId(source)
+lib.callback.register('alex-electricianjob:reward', function ()
+    local player = QBCore.Functions.GetPlayer(source)
     local reward = math.random(Config.RewardMin, Config.RewardMax)
 
-    exports.ox_inventory:AddItem(ped.source, 'money', reward)
+    player.Functions.AddMoney("bank", reward)
 end)
