@@ -1,10 +1,39 @@
-ESX = exports["es_extended"]:getSharedObject()
+local QBCore = exports["qb-core"]:GetCoreObject()
 
 local jobs = {}
-
 local showJobs = false
 
 -- STATION
+
+local function isSpawnPointClear(coords, distance)
+    local vehiclePool = GetGamePool("CVehicle")
+    local pedPool = GetGamePool("CPed")
+
+    local clear = true
+
+    for i = 1, #vehiclePool do
+        local vehicle = vehiclePool[i]
+        local dist = Vdist(coords, GetEntityCoords(vehicle))
+
+        if dist <= distance then
+            clear = false
+            goto continue
+        end
+    end
+
+    for i = 1, #pedPool do
+        local ped = pedPool[i]
+        local dist = Vdist(coords, GetEntityCoords(ped))
+
+        if dist <= distance then
+            clear = false
+            goto continue
+        end
+    end
+
+    ::continue::
+    return clear
+end
 
 for k, v in ipairs(Config.Station) do
     -- SPAWNER BLIP --
@@ -28,8 +57,9 @@ for k, v in ipairs(Config.Station) do
         radius = 1.5,
         debug = false,
         inside = function()
-            if IsControlJustPressed(38, 38) and not showJobs and ESX.Game.IsSpawnPointClear(v.spawnPoint, 6.0) then
+            if IsControlJustPressed(38, 38) and not showJobs and isSpawnPointClear(v.spawnPoint, 6.0) then
                 ESX.Game.SpawnVehicle(v.carModel, v.spawnPoint, v.heading)
+                QBCore.Functions.SpawnVehicle(v.carModel, nil, vector4(v.spawnPoint, v.heading), true)
                 showJobs = true
                 works()
                 local alert = lib.alertDialog({
@@ -83,7 +113,7 @@ for k, v in ipairs(Config.Station) do
             if cache.vehicle then
                 if IsControlJustPressed(38, 38) and showJobs then
                     local vehicle = GetVehiclePedIsIn(cache.ped, false)
-                    ESX.Game.DeleteVehicle(vehicle)
+                    QBCore.Functions.DeleteVehicle(vehicle)
                     showJobs = false
                     for k, v in ipairs(jobs) do
                         RemoveBlip(v)
@@ -132,7 +162,7 @@ function works()
                         TriggerEvent("myAnimation")
                         local success = lib.skillCheck(Config.skillDifficulty, { 'w', 'a', 's', 'd' })
                         if success then
-                            lib.callback('jocy-technician:reward')
+                            lib.callback('alex-electricianjob:reward')
                             lib.notify({
                                 title = 'Technician',
                                 description = 'You have successfully fixed the problem!',
@@ -194,10 +224,8 @@ function works()
     end
 end
 
-RegisterNetEvent('esx:playerLoaded')
-AddEventHandler('esx:playerLoaded', function(playerData)
+RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
     works()
-
 end)
 
 AddEventHandler('onResourceStart', function(resourceName)
