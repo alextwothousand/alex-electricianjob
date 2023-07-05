@@ -58,7 +58,6 @@ for k, v in ipairs(Config.Station) do
         debug = false,
         inside = function()
             if IsControlJustPressed(38, 38) and not showJobs and isSpawnPointClear(v.spawnPoint, 6.0) then
-                ESX.Game.SpawnVehicle(v.carModel, v.spawnPoint, v.heading)
                 QBCore.Functions.SpawnVehicle(v.carModel, nil, vector4(v.spawnPoint, v.heading), true)
                 showJobs = true
                 works()
